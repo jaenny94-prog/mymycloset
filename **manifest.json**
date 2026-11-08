@@ -1,21 +1,17 @@
+JSON
 {
   "name": "스마트 옷장 & 뷰티 아카이브",
   "short_name": "스마트옷장",
-  "start_url": "./index.html",
+  "start_url": "/smart-closet/",
+  "scope": "/smart-closet/",
   "display": "standalone",
   "background_color": "#fdfafb",
   "theme_color": "#e1004b",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3531/3531849.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3531/3531849.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
