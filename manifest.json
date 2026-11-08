@@ -2,6 +2,7 @@
   "id": "/mymycloset/",
   "name": "스마트 옷장 & 뷰티 아카이브",
   "short_name": "스마트옷장",
+  "description": "스마트 옷장 관리, OOTD 기록 및 화장품 파우치 아카이브",
   "start_url": "/mymycloset/",
   "scope": "/mymycloset/",
   "display": "standalone",
@@ -9,36 +10,22 @@
   "theme_color": "#e1004b",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide"
     }
   ]
 }
