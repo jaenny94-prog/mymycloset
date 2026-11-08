@@ -1076,6 +1076,42 @@
       .catch(err => console.log('SW Error:', err));
   }
 </script>
-</body>
+ <!-- PWA 정식 앱 설치 유도 배너 -->
+<div id="pwaInstallBanner" class="fixed top-4 left-4 right-4 z-50 bg-[#e1004b] text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between hidden">
+  <div class="flex items-center gap-2">
+    <i class="fa-solid fa-mobile-screen text-xl"></i>
+    <div>
+      <div class="font-extrabold text-xs">스마트 옷장 앱 설치</div>
+      <div class="text-[10px] opacity-90">주소창과 툴바 없는 전체 화면 앱으로 설치합니다.</div>
+    </div>
+  </div>
+  <button id="pwaInstallBtn" class="bg-white text-[#e1004b] font-black text-xs px-3.5 py-2 rounded-xl shadow">
+    앱 설치
+  </button>
+</div>
+
+<script>
+  let deferredPrompt;
+  const banner = document.getElementById('pwaInstallBanner');
+  const btn = document.getElementById('pwaInstallBtn');
+
+  // 브라우저가 독립 앱 설치 준비를 마쳤을 때 실행
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    banner.classList.remove('hidden');
+  });
+
+  btn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        banner.classList.add('hidden');
+      }
+      deferredPrompt = null;
+    }
+  });
+</script>
 </body>
 </html>
