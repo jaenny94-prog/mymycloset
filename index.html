@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <!-- 스마트폰 단독 앱(PWA) 전용 메타 태그 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#fdfafb">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="스마트옷장">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3531/3531849.png">
+
+  <!-- 인라인 웹 매니페스트 (안드로이드/Chrome 앱 설치 지원) -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"스마트 옷장 & 뷰티 아카이브","short_name":"스마트옷장","start_url":".","display":"standalone","background_color":"#fdfafb","theme_color":"#e1004b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3531/3531849.png","sizes":"512x512","type":"image/png"}]}'>
+
+  <title>스마트 옷장 & 뷰티 아카이브</title>
+
+  <!-- Tailwind CSS & Chart.js & FontAwesome & Pretendard Font -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-page: #fdfafb;
+      --bg-hero: linear-gradient(135deg, #fce8ef 0%, #f9d8e4 100%);
+      --bg-card: #ffffff;
+      --bg-weather-active: linear-gradient(180deg, #fff5f8 0%, #fde2eb 100%);
+      --bg-alert: #fdf0f4;
+      --primary: #e1004b;
+      --primary-soft: #fce4ec;
+      --border-soft: #f5d6e0;
+      --text-dark: #1f171b;
+      --text-muted: #8e7a83;
+    }
+    body[data-theme="warm-shop"] {
+      --bg-page: #faf7f2;
+      --bg-hero: linear-gradient(135deg, #f3eae0 0%, #e8d8c8 100%);
+      --bg-card: #ffffff;
+      --bg-weather-active: linear-gradient(180deg, #fdfbf9 0%, #f1e4d6 100%);
+      --bg-alert: #f7efe6;
+      --primary: #9c5a30;
+      --primary-soft: #f2e6dc;
+      --border-soft: #e6d7c9;
+      --text-dark: #2c221c;
+      --text-muted: #847366;
+    }
+    body[data-theme="toss-gray"] {
+      --bg-page: #f2f4f6;
+      --bg-hero: linear-gradient(135deg, #e8f3ff 0%, #d4e8ff 100%);
+      --bg-card: #ffffff;
+      --bg-weather-active: linear-gradient(180deg, #f4f9ff 0%, #deefff 100%);
+      --bg-alert: #edf4fc;
+      --primary: #3182f6;
+      --primary-soft: #e8f3ff;
+      --border-soft: #dde4ec;
+      --text-dark: #191f28;
+      --text-muted: #8b95a1;
+    }
+    body[data-theme="dark-mode"] {
+      --bg-page: #121215;
+      --bg-hero: linear-gradient(135deg, #271b24 0%, #1d1726 100%);
+      --bg-card: #1c1c21;
+      --bg-weather-active: linear-gradient(180deg, #2b1f28 0%, #231b24 100%);
+      --bg-alert: #261b22;
+      --primary: #f43f71;
+      --primary-soft: #381e28;
+      --border-soft: #322830;
+      --text-dark: #f5f3f4;
+      --text-muted: #9e9197;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-dark);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      transition: background-color 0.25s ease;
+    }
+    .hero-box { background: var(--bg-hero); border: 1px solid var(--border-soft); }
+    .card-box { background: var(--bg-card); border: 1px solid var(--border-soft); }
+    .weather-active { background: var(--bg-weather-active); border: 1.5px solid var(--border-soft); }
+    .alert-box { background: var(--bg-alert); border: 1px solid var(--border-soft); }
+    .btn-primary { background-color: var(--primary); color: #ffffff; }
+    .btn-primary:active { opacity: 0.88; transform: scale(0.98); }
+    .badge-soft { background-color: var(--primary-soft); color: var(--primary); }
+    .text-primary-color { color: var(--primary); }
+    .border-soft-color { border-color: var(--border-soft); }
+
+    /* 하단 다크 플로팅 독 */
+    .floating-dock {
+      background: rgba(30, 26, 28, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
+      padding-bottom: env(safe-area-inset-bottom, 8px);
+    }
+    .dock-item { color: #9c9497; transition: all 0.2s ease; }
+    .dock-item.active {
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body data-theme="pastel-pink" class="min-h-screen pb-32">
+
+  <!-- ================= 상단 헤더 ================= -->
+  <header class="sticky top-0 z-30 bg-[var(--bg-page)]/90 backdrop-blur-md border-b border-soft-color px-4 sm:px-8 py-3 pt-[max(12px,env(safe-area-inset-top))]">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-full badge-soft flex items-center justify-center font-black text-xs tracking-tight shadow-sm">
+          CA
+        </div>
+        <div>
+          <h1 class="font-extrabold text-sm sm:text-base tracking-tight">스마트 옷장 & 뷰티 아카이브</h1>
+          <p class="text-[9px] font-bold tracking-widest text-primary-color uppercase">WARDROBE OS · BODY LOG · BEAUTY POUCH</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <!-- 테마 전환 -->
+        <select id="themeSelector" onchange="changeTheme(this.value)" class="text-[11px] card-box rounded-full px-2.5 py-1 font-semibold focus:outline-none">
+          <option value="pastel-pink">🌸 파스텔</option>
+          <option value="warm-shop">☕ 웜톤</option>
+          <option value="toss-gray">💙 토스</option>
+          <option value="dark-mode">🌙 다크</option>
+        </select>
+
+        <!-- 데이터 백업/복원 설정 모달 열기 -->
+        <button onclick="openModal('backupModal')" class="badge-soft w-7 h-7 rounded-full flex items-center justify-center text-xs" title="데이터 백업 및 복원">
+          <i class="fa-solid fa-cloud-arrow-down"></i>
+        </button>
+
+        <button onclick="openModal('clothModal')" class="btn-primary px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
+          <i class="fa-solid fa-plus text-[10px]"></i>
+          <span>새 옷</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= 메인 콘텐츠 ================= -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-8 pt-5 space-y-6">
+
+    <!-- ================= [VIEW 1] 대시보드 ================= -->
+    <div id="view-dashboard" class="space-y-5">
+      
+      <!-- 상단 요약 카드 박스 -->
+      <section class="hero-box rounded-[28px] p-5 sm:p-7 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[10px] font-black tracking-widest text-primary-color uppercase mb-0.5">OVERVIEW & ANALYTICS</p>
+            <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">스마트 라이프스타일 대시보드</h2>
+          </div>
+          <button onclick="openModal('clothModal')" class="btn-primary px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
+            <i class="fa-solid fa-plus text-[10px]"></i> 새 옷 등록
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          <!-- 카드 1: 보관 의류 -->
+          <div onclick="switchView('closet')" class="card-box rounded-2xl p-4 sm:p-5 shadow-sm cursor-pointer hover:shadow-md transition">
+            <div class="flex items-center justify-between text-xs font-bold mb-2">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-shirt text-primary-color"></i> 보관 의류
+              </span>
+              <span class="text-primary-color text-[11px]">옷장 ↗</span>
+            </div>
+            <div class="text-2xl font-black mb-1"><span id="dashClothCount">6</span> <span class="text-xs font-normal">벌</span></div>
+            <p class="text-[11px] text-[var(--text-muted)]" id="dashClothSub">가치 107만원 · 누적 83회</p>
+          </div>
+
+          <!-- 카드 2: 목표 달성률 -->
+          <div onclick="switchView('body')" class="card-box rounded-2xl p-4 sm:p-5 shadow-sm cursor-pointer hover:shadow-md transition">
+            <div class="flex items-center justify-between text-xs font-bold mb-2">
+              <span>목표 달성률</span>
+              <span class="badge-soft px-2 py-0.5 rounded-full text-[10px] font-extrabold" id="dashDietDday">D-53</span>
+            </div>
+            <div class="text-2xl font-black text-primary-color mb-2"><span id="dashGoalPercent">49</span> <span class="text-xs font-normal">%</span></div>
+            <div class="w-full h-2 rounded-full bg-pink-100 overflow-hidden">
+              <div id="dashGoalBar" class="h-full btn-primary rounded-full transition-all duration-500" style="width: 49%"></div>
+            </div>
+          </div>
+
+          <!-- 카드 3: 화장품 파우치 -->
+          <div onclick="switchView('pouch')" class="card-box rounded-2xl p-4 sm:p-5 shadow-sm cursor-pointer hover:shadow-md transition">
+            <div class="flex items-center justify-between text-xs font-bold mb-2">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-regular fa-heart text-primary-color"></i> 화장품 파우치
+              </span>
+              <span class="text-primary-color text-[11px]">파우치 ↗</span>
+            </div>
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-2xl font-black"><span id="dashCosmCount">3</span> <span class="text-xs font-normal">개</span></div>
+              <span id="dashCosmAlertBadge" class="btn-primary px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <i class="fa-solid fa-triangle-exclamation text-[9px]"></i> 만료 1개
+              </span>
+            </div>
+            <p class="text-[11px] text-[var(--text-muted)]" id="dashCosmSub">
+              안전 1 · <span class="text-amber-500 font-bold">임박 1</span> · <span class="text-primary-color font-bold">만료 1</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3일 기상예보 & 스타일 가이드 -->
+      <section class="card-box rounded-[28px] p-5 sm:p-7 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-amber-50 text-primary-color flex items-center justify-center font-bold text-xs">
+              <i class="fa-solid fa-temperature-half"></i>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-sm sm:text-base">3일 기상예보 & 스타일 가이드</h3>
+              <p class="text-[10px] text-primary-color font-semibold">기온 맞춤 권장 옷차림</p>
+            </div>
+          </div>
+
+          <!-- 도시 스위치 -->
+          <div class="flex items-center border border-soft-color rounded-full p-0.5 text-xs font-bold bg-[var(--bg-page)]" id="citySwitchGroup">
+            <button onclick="selectCity('서울')" data-city="서울" class="city-btn px-2.5 py-1 rounded-full badge-soft">서울</button>
+            <button onclick="selectCity('부산')" data-city="부산" class="city-btn px-2.5 py-1 rounded-full text-[var(--text-muted)]">부산</button>
+            <button onclick="selectCity('대구')" data-city="대구" class="city-btn px-2.5 py-1 rounded-full text-[var(--text-muted)]">대구</button>
+            <button onclick="selectCity('제주')" data-city="제주" class="city-btn px-2.5 py-1 rounded-full text-[var(--text-muted)]">제주</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5 sm:gap-4" id="weatherCardsGrid"></div>
+
+        <!-- 오늘 코디 브리프 -->
+        <div class="card-box rounded-2xl p-4 sm:p-5 space-y-2.5 border border-soft-color">
+          <div class="flex items-center justify-between text-xs font-bold">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-shirt text-primary-color"></i>
+              <span id="briefTitle">[오늘] 코디 브리프</span>
+            </span>
+            <span class="text-primary-color text-[10px]" id="briefSubTemp">체감 18°C · 습도 45%</span>
+          </div>
+          <p class="text-xs text-[var(--text-muted)]" id="briefDesc">
+            가벼운 니트나 셔츠에 슬랙스가 쾌적해요. (일교차 11°C 주의)
+          </p>
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div class="text-xs font-bold">
+              <span class="text-primary-color mr-1">추천 아이템:</span>
+              <span id="briefItems">캐시미어 니트 · 슬랙스 · 로퍼</span>
+            </div>
+            <button onclick="switchView('ai')" class="btn-primary px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
+              <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> 맞춤 코디 보기 <i class="fa-solid fa-chevron-right text-[9px]"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 화장품 만료 경고 배너 -->
+      <section class="alert-box rounded-[24px] p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full badge-soft flex items-center justify-center text-primary-color text-sm">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h4 class="font-extrabold text-xs sm:text-sm" id="bannerAlertTitle">유통기한 지난 화장품 발견</h4>
+              <span class="badge-soft px-2 py-0.5 rounded-full text-[9px] font-bold">피부 트러블 주의</span>
+            </div>
+            <p class="text-[11px] text-[var(--text-muted)] mt-0.5">EXP 기한 또는 개봉 후 사용기한(PAO)이 경과한 제품을 비워주세요.</p>
+          </div>
+        </div>
+        <button onclick="switchView('pouch')" class="btn-primary px-4 py-2 rounded-full text-xs font-bold shadow-sm">
+          파우치 비우기
+        </button>
+      </section>
+    </div>
+
+    <!-- ================= [VIEW 2] 내 옷장 ================= -->
+    <div id="view-closet" class="hidden space-y-4">
+      <div class="card-box rounded-[28px] p-5 sm:p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold">내 디지털 옷장 아카이브</h2>
+            <p class="text-xs text-[var(--text-muted)]">착용 횟수, 1회 착용 단가(CPW), 미착용 기간을 자동 계산합니다.</p>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="openModal('categoryModal')" class="badge-soft px-3 py-1.5 rounded-full text-xs font-bold">
+              <i class="fa-solid fa-tags mr-1"></i>태그 관리
+            </button>
+            <button onclick="openModal('clothModal')" class="btn-primary px-3.5 py-1.5 rounded-full text-xs font-bold">
+              + 새 옷 등록
+            </button>
+          </div>
+        </div>
+
+        <!-- 카테고리 칩 -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1" id="closetCategoryBar"></div>
+
+        <!-- 의류 그리드 -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1" id="closetGrid"></div>
+      </div>
+    </div>
+
+    <!-- ================= [VIEW 3] 착샷 기록 (OOTD) ================= -->
+    <div id="view-ootd" class="hidden space-y-4">
+      <div class="card-box rounded-[28px] p-5 sm:p-6 space-y-4">
+        <h2 class="text-base sm:text-lg font-extrabold">OOTD 착샷 & 착용 카운터</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">착용 날짜</label>
+            <input type="date" id="ootdDateInput" class="w-full p-2.5 rounded-xl border border-soft-color bg-transparent">
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">착용한 의류</label>
+            <select id="ootdClothSelect" class="w-full p-2.5 rounded-xl border border-soft-color bg-transparent"></select>
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">코디 메모 / TPO</label>
+            <input type="text" id="ootdMemoInput" placeholder="예: 학부모 상담일 단정한 룩" class="w-full p-2.5 rounded-xl border border-soft-color bg-transparent">
+          </div>
+        </div>
+        <button onclick="recordOOTD()" class="btn-primary w-full sm:w-auto px-5 py-2.5 rounded-full text-xs font-bold">
+          오늘 착샷 기록하기 (착용 +1회)
+        </button>
+
+        <div class="divide-y divide-[var(--border-soft)] pt-2 text-xs" id="ootdLogContainer"></div>
+      </div>
+    </div>
+
+    <!-- ================= [VIEW 4] AI 코디 ================= -->
+    <div id="view-ai" class="hidden space-y-4">
+      <div class="card-box rounded-[28px] p-5 sm:p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="badge-soft px-2 py-0.5 rounded-full text-[9px] font-black">AI STYLIST</span>
+            <h2 class="text-base sm:text-lg font-extrabold mt-1">기온 & TPO 맞춤 코디</h2>
+          </div>
+          <button onclick="renderAICoords()" class="btn-primary px-3.5 py-1.5 rounded-full text-xs font-bold">
+            <i class="fa-solid fa-rotate mr-1"></i>코디 재추천
+          </button>
+        </div>
+        <div id="aiCoordCards" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+      </div>
+    </div>
+
+    <!-- ================= [VIEW 5] 바디 로그 ================= -->
+    <div id="view-body" class="hidden space-y-4">
+      <div class="card-box rounded-[28px] p-5 sm:p-6 space-y-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold">바디 로그 & 다이어트 그래프</h2>
+          <p class="text-xs text-[var(--text-muted)]">체중(kg)과 허리(inch)를 기록하고 목표 달성률을 추적합니다.</p>
+        </div>
+
+        <!-- 목표 설정 -->
+        <div class="alert-box rounded-2xl p-3.5 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs items-end">
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">시작 체중(kg)</label>
+            <input type="number" step="0.1" id="startWeightInput" value="58.0" class="w-full p-2 rounded-xl card-box">
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">목표 체중(kg)</label>
+            <input type="number" step="0.1" id="goalWeightInput" value="52.0" class="w-full p-2 rounded-xl card-box">
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">목표 허리(inch)</label>
+            <input type="number" step="0.5" id="goalWaistInput" value="25.0" class="w-full p-2 rounded-xl card-box">
+          </div>
+          <button onclick="saveBodyGoals()" class="btn-primary py-2 rounded-xl font-bold">목표 저장</button>
+        </div>
+
+        <!-- 오늘 치수 기록 -->
+        <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 text-xs items-end">
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1">측정일</label>
+            <input type="date" id="bodyDateInput" class="w-full p-2 rounded-xl border border-soft-color bg-transparent">
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1">체중(kg)</label>
+            <input type="number" step="0.1" id="bodyWeightInput" placeholder="55.2" class="w-full p-2 rounded-xl border border-soft-color bg-transparent">
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1">허리(inch)</label>
+            <input type="number" step="0.5" id="bodyWaistInput" placeholder="26.0" class="w-full p-2 rounded-xl border border-soft-color bg-transparent">
+          </div>
+          <button onclick="addBodyLog()" class="col-span-3 sm:col-span-1 btn-primary py-2 rounded-xl font-bold">+ 기록 추가</button>
+        </div>
+
+        <div class="h-60 relative pt-1">
+          <canvas id="bodyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= [VIEW 6] 뷰티 파우치 ================= -->
+    <div id="view-pouch" class="hidden space-y-4">
+      <div class="card-box rounded-[28px] p-5 sm:p-6 space-y-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold">뷰티 파우치 & 유통기한 D-Day</h2>
+          <p class="text-xs text-[var(--text-muted)]">개봉 후 기한(PAO)과 EXP 중 빠른 기한을 자동 판정합니다.</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs items-end">
+          <div class="col-span-2">
+            <label class="block text-[var(--text-muted)] mb-1">화장품 이름</label>
+            <input type="text" id="cosmNameInput" placeholder="예: 시카 수분 크림" class="w-full p-2 rounded-xl border border-soft-color bg-transparent">
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1">개봉일자</label>
+            <input type="date" id="cosmOpenInput" class="w-full p-2 rounded-xl border border-soft-color bg-transparent">
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1">권장 PAO</label>
+            <select id="cosmPaoInput" class="w-full p-2 rounded-xl border border-soft-color bg-transparent">
+              <option value="6">6개월 (선크림/앰플)</option>
+              <option value="12" selected>12개월 (기본)</option>
+              <option value="24">24개월 (파우더)</option>
+            </select>
+          </div>
+          <button onclick="addCosmetic()" class="col-span-2 sm:col-span-1 btn-primary py-2 rounded-xl font-bold">+ 파우치 등록</button>
+        </div>
+
+        <div id="pouchList" class="space-y-2 pt-1"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= 하단 다크 플로팅 독 ================= -->
+  <nav class="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 floating-dock rounded-full px-2.5 py-1.5 flex items-center gap-1 sm:gap-2">
+    <button onclick="switchView('dashboard')" id="dock-dashboard" class="dock-item active px-3 py-1.5 rounded-full flex flex-col items-center gap-0.5 min-w-[56px]">
+      <i class="fa-solid fa-table-cells-large text-sm"></i>
+      <span class="text-[9px] font-bold">대시보드</span>
+    </button>
+    <button onclick="switchView('closet')" id="dock-closet" class="dock-item relative px-3 py-1.5 rounded-full flex flex-col items-center gap-0.5 min-w-[56px]">
+      <span id="dockBadgeCloset" class="absolute top-0.5 right-1.5 bg-[#e1004b] text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center">2</span>
+      <i class="fa-solid fa-shirt text-sm"></i>
+      <span class="text-[9px] font-bold">내 옷장</span>
+    </button>
+    <button onclick="switchView('ootd')" id="dock-ootd" class="dock-item px-3 py-1.5 rounded-full flex flex-col items-center gap-0.5 min-w-[56px]">
+      <i class="fa-solid fa-camera text-sm"></i>
+      <span class="text-[9px] font-bold">착샷기록</span>
+    </button>
+    <button onclick="switchView('ai')" id="dock-ai" class="dock-item px-3 py-1.5 rounded-full flex flex-col items-center gap-0.5 min-w-[56px]">
+      <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+      <span class="text-[9px] font-bold">AI 코디</span>
+    </button>
+    <button onclick="switchView('body')" id="dock-body" class="dock-item px-3 py-1.5 rounded-full flex flex-col items-center gap-0.5 min-w-[56px]">
+      <i class="fa-regular fa-user text-sm"></i>
+      <span class="text-[9px] font-bold">바디로그</span>
+    </button>
+    <button onclick="switchView('pouch')" id="dock-pouch" class="dock-item relative px-3 py-1.5 rounded-full flex flex-col items-center gap-0.5 min-w-[56px]">
+      <span id="dockBadgePouch" class="absolute top-0.5 right-1.5 bg-[#e1004b] text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center">2</span>
+      <i class="fa-regular fa-heart text-sm"></i>
+      <span class="text-[9px] font-bold">파우치</span>
+    </button>
+  </nav>
+
+  <!-- ================= 모달 1: 새 옷 등록 (카메라 자동 압축) ================= -->
+  <div id="clothModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="card-box w-full max-w-md rounded-3xl p-5 space-y-3.5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-soft-color pb-2.5">
+        <h3 class="font-extrabold text-sm">새 의류 등록</h3>
+        <button onclick="closeModal('clothModal')" class="text-[var(--text-muted)] text-base"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[var(--text-muted)] mb-1 font-semibold">사진 첨부 (스마트폰 촬영/갤러리)</label>
+          <input type="file" id="clothImgInput" accept="image/*" class="w-full text-xs">
+          <p class="text-[9px] text-[var(--text-muted)] mt-1">*모바일 저장공간 절약을 위해 자동으로 압축되어 저장됩니다.</p>
+        </div>
+        <div>
+          <label class="block text-[var(--text-muted)] mb-1 font-semibold">의류명 *</label>
+          <input type="text" id="clothNameInput" placeholder="예: 오버핏 캐시미어 니트" class="w-full p-2.5 rounded-xl border border-soft-color bg-transparent">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">카테고리</label>
+            <select id="clothCatInput" class="w-full p-2.5 rounded-xl border border-soft-color bg-transparent"></select>
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">구매가 (원)</label>
+            <input type="number" id="clothPriceInput" placeholder="120000" class="w-full p-2.5 rounded-xl border border-soft-color bg-transparent">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">누적 착용 횟수</label>
+            <input type="number" id="clothWearInput" value="1" class="w-full p-2.5 rounded-xl border border-soft-color bg-transparent">
+          </div>
+          <div>
+            <label class="block text-[var(--text-muted)] mb-1 font-semibold">마지막 착용일</label>
+            <input type="date" id="clothLastDateInput" class="w-full p-2.5 rounded-xl border border-soft-color bg-transparent">
+          </div>
+        </div>
+      </div>
+      <button onclick="saveCloth()" class="w-full btn-primary py-2.5 rounded-xl text-xs font-bold">내 옷장에 저장</button>
+    </div>
+  </div>
+
+  <!-- ================= 모달 2: 데이터 백업 및 복원 ================= -->
+  <div id="backupModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="card-box w-full max-w-sm rounded-3xl p-5 space-y-3.5 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-soft-color pb-2.5">
+        <h3 class="font-extrabold text-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-database text-primary-color"></i> 데이터 백업 및 복원
+        </h3>
+        <button onclick="closeModal('backupModal')" class="text-[var(--text-muted)]"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="text-xs text-[var(--text-muted)] leading-relaxed">
+        스마트폰 브라우저에 저장된 옷장, 체중, 화장품 데이터를 파일로 안전하게 백업하거나 가져올 수 있습니다.
+      </p>
+      <div class="space-y-2 pt-1 text-xs">
+        <button onclick="exportData()" class="w-full btn-primary py-2.5 rounded-xl font-bold flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-download"></i> 내 데이터 파일로 백업받기
+        </button>
+        <div class="border border-dashed border-soft-color rounded-xl p-2.5 text-center">
+          <label class="block font-bold mb-1 cursor-pointer">
+            <i class="fa-solid fa-upload mr-1"></i> 백업 파일 불러오기
+            <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
+          </label>
+          <span class="text-[10px] text-[var(--text-muted)]">이전에 다운로드한 .json 파일을 선택하세요</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 모달 3: 미착용 정리 (Purge) ================= -->
+  <div id="purgeModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="card-box w-full max-w-md rounded-3xl p-5 space-y-3 shadow-2xl max-h-[85vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-soft-color pb-2">
+        <h3 class="font-extrabold text-sm text-primary-color"><i class="fa-regular fa-heart mr-1"></i> 1년 이상 미착용 의류</h3>
+        <button onclick="closeModal('purgeModal')" class="text-[var(--text-muted)]"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="purgeListBox" class="divide-y divide-[var(--border-soft)] text-xs"></div>
+    </div>
+  </div>
+
+  <!-- ================= 모달 4: 카테고리 관리 ================= -->
+  <div id="categoryModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="card-box w-full max-w-sm rounded-3xl p-5 space-y-3 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-soft-color pb-2">
+        <h3 class="font-extrabold text-sm">카테고리 태그 관리</h3>
+        <button onclick="closeModal('categoryModal')" class="text-[var(--text-muted)]"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="flex gap-1.5">
+        <input type="text" id="newCatInput" placeholder="예: 하객룩, 승부복" class="flex-1 p-2 rounded-xl border border-soft-color text-xs bg-transparent">
+        <button onclick="addCategory()" class="btn-primary px-3 rounded-xl text-xs font-bold">추가</button>
+      </div>
+      <div id="catModalList" class="flex flex-wrap gap-1.5 pt-2 max-h-40 overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <!-- ================= 자바스크립트 로직 엔진 ================= -->
+  <script>
+    // ---------- 1. 초기 데이터셋 ----------
+    const defaultClothes = [
+      { id: 1, name: '오버핏 캐시미어 니트', category: '상의', price: 180000, wearCount: 24, lastDate: '2026-11-01', img: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&q=80' },
+      { id: 2, name: '울 테일러드 자켓', category: '아우터', price: 320000, wearCount: 18, lastDate: '2026-10-28', img: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&q=80' },
+      { id: 3, name: '와이드 핀턱 슬랙스', category: '하의', price: 110000, wearCount: 30, lastDate: '2026-11-05', img: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&q=80' },
+      { id: 4, name: '실크 리본 블라우스', category: '출근룩', price: 160000, wearCount: 9, lastDate: '2026-09-15', img: 'https://images.unsplash.com/photo-1551163943-3f6a855d1153?w=400&q=80' },
+      { id: 5, name: '트위드 미니 원피스 (미착용)', category: '하객룩', price: 210000, wearCount: 1, lastDate: '2024-05-10', img: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&q=80' },
+      { id: 6, name: '빈티지 트렌치 코트 (미착용)', category: '아우터', price: 90000, wearCount: 1, lastDate: '2025-04-02', img: 'https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=400&q=80' }
+    ];
+
+    const defaultCosmetics = [
+      { id: 1, name: '나스 래디언트 크리미 컨실러', openDate: '2025-05-01', pao: 12, expireDate: '2025-05-01' },
+      { id: 2, name: '시카 배리어 수분 앰플', openDate: '2026-05-20', pao: 6, expireDate: '2026-11-20' },
+      { id: 3, name: '헤라 블랙 쿠션 21N1', openDate: '2026-09-10', pao: 12, expireDate: '2027-09-10' }
+    ];
+
+    const defaultBodyLogs = [
+      { date: '10.01', weight: 58.0, waist: 27.5 },
+      { date: '10.15', weight: 56.8, waist: 27.0 },
+      { date: '11.01', weight: 55.6, waist: 26.2 },
+      { date: '11.08', weight: 55.1, waist: 26.0 }
+    ];
+
+    const cityWeathers = {
+      '서울': {
+        days: [
+          { label: '오늘', date: '11.08', icon: 'fa-sun text-amber-400', temp: 18, min: 8, max: 19, badge: '화창함', badgeClass: 'bg-white text-gray-800' },
+          { label: '내일', date: '11.09', icon: 'fa-cloud-sun text-sky-400', temp: 14, min: 6, max: 15, badge: '선선함', badgeClass: 'bg-amber-50 text-amber-800' },
+          { label: '모레', date: '11.10', icon: 'fa-cloud-rain text-indigo-400', temp: 9, min: 3, max: 11, badge: '흐리고 쌀쌀', badgeClass: 'bg-amber-100 text-amber-900' }
+        ],
+        feel: '체감 18°C · 습도 45%',
+        desc: '가벼운 니트나 셔츠에 슬랙스가 쾌적해요. (일교차 11°C 주의)',
+        items: '캐시미어 니트 · 슬랙스 · 로퍼'
+      },
+      '부산': {
+        days: [
+          { label: '오늘', date: '11.08', icon: 'fa-sun text-amber-400', temp: 20, min: 12, max: 21, badge: '따뜻함', badgeClass: 'bg-white text-gray-800' },
+          { label: '내일', date: '11.09', icon: 'fa-sun text-amber-400', temp: 18, min: 11, max: 19, badge: '쾌적함', badgeClass: 'bg-amber-50 text-amber-800' },
+          { label: '모레', date: '11.10', icon: 'fa-cloud-sun text-sky-400', temp: 15, min: 9, max: 16, badge: '선선함', badgeClass: 'bg-amber-100 text-amber-900' }
+        ],
+        feel: '체감 20°C · 습도 50%',
+        desc: '낮에는 포근하고 바닷바람이 살짝 불어요. 가벼운 블라우스나 가디건을 추천해요.',
+        items: '실크 블라우스 · 가디건 · 데님 팬츠'
+      },
+      '대구': {
+        days: [
+          { label: '오늘', date: '11.08', icon: 'fa-sun text-amber-400', temp: 19, min: 7, max: 20, badge: '화창함', badgeClass: 'bg-white text-gray-800' },
+          { label: '내일', date: '11.09', icon: 'fa-cloud text-gray-400', temp: 15, min: 6, max: 16, badge: '구름많음', badgeClass: 'bg-amber-50 text-amber-800' },
+          { label: '모레', date: '11.10', icon: 'fa-cloud-rain text-indigo-400', temp: 10, min: 4, max: 12, badge: '쌀쌀함', badgeClass: 'bg-amber-100 text-amber-900' }
+        ],
+        feel: '체감 19°C · 습도 40%',
+        desc: '일교차가 크니 아침저녁으로 걸칠 테일러드 자켓을 챙기세요.',
+        items: '울 테일러드 자켓 · 티셔츠 · 슬랙스'
+      },
+      '제주': {
+        days: [
+          { label: '오늘', date: '11.08', icon: 'fa-cloud-sun text-sky-400', temp: 21, min: 14, max: 22, badge: '포근함', badgeClass: 'bg-white text-gray-800' },
+          { label: '내일', date: '11.09', icon: 'fa-wind text-teal-500', temp: 17, min: 12, max: 18, badge: '바람주의', badgeClass: 'bg-amber-50 text-amber-800' },
+          { label: '모레', date: '11.10', icon: 'fa-sun text-amber-400', temp: 16, min: 11, max: 17, badge: '맑음', badgeClass: 'bg-amber-100 text-amber-900' }
+        ],
+        feel: '체감 20°C · 습도 60%',
+        desc: '바람을 막아주는 트렌치코트나 단정한 니트 레이어드가 잘 어울립니다.',
+        items: '트렌치 코트 · 캐시미어 니트 · 스니커즈'
+      }
+    };
+
+    // ---------- 2. 상태값 및 로컬스토리지 복원 ----------
+    let clothes = JSON.parse(localStorage.getItem('ca_pwa_clothes')) || defaultClothes;
+    let cosmetics = JSON.parse(localStorage.getItem('ca_pwa_cosmetics')) || defaultCosmetics;
+    let bodyLogs = JSON.parse(localStorage.getItem('ca_pwa_body')) || defaultBodyLogs;
+    let categories = JSON.parse(localStorage.getItem('ca_pwa_cats')) || ['상의', '아우터', '하의', '출근룩', '하객룩', '페이보릿'];
+    let ootdLogs = JSON.parse(localStorage.getItem('ca_pwa_ootd')) || [];
+    let bodyGoal = JSON.parse(localStorage.getItem('ca_pwa_goal')) || { startW: 58.0, goalW: 52.0, goalWaist: 25.0 };
+
+    let currentCity = '서울';
+    let currentCat = '전체';
+    let chartObj = null;
+
+    // ---------- 3. 라이프사이클 초기화 ----------
+    window.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('ootdDateInput').value = today;
+      document.getElementById('bodyDateInput').value = today;
+      document.getElementById('cosmOpenInput').value = today;
+      document.getElementById('clothLastDateInput').value = today;
+
+      renderAll();
+    });
+
+    function renderAll() {
+      saveToStorage();
+      updateDashboardStats();
+      selectCity(currentCity);
+      renderCloset();
+      renderPouch();
+      renderOOTD();
+      renderAICoords();
+    }
+
+    function saveToStorage() {
+      localStorage.setItem('ca_pwa_clothes', JSON.stringify(clothes));
+      localStorage.setItem('ca_pwa_cosmetics', JSON.stringify(cosmetics));
+      localStorage.setItem('ca_pwa_body', JSON.stringify(bodyLogs));
+      localStorage.setItem('ca_pwa_cats', JSON.stringify(categories));
+      localStorage.setItem('ca_pwa_ootd', JSON.stringify(ootdLogs));
+      localStorage.setItem('ca_pwa_goal', JSON.stringify(bodyGoal));
+    }
+
+    function changeTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+    }
+
+    function switchView(viewName) {
+      ['dashboard', 'closet', 'ootd', 'ai', 'body', 'pouch'].forEach(v => {
+        document.getElementById(`view-${v}`).classList.add('hidden');
+        document.getElementById(`dock-${v}`).classList.remove('active');
+      });
+      document.getElementById(`view-${viewName}`).classList.remove('hidden');
+      document.getElementById(`dock-${viewName}`).classList.add('active');
+
+      if (viewName === 'body') setTimeout(renderBodyChart, 60);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ---------- 4. 대시보드 통계 계산 ----------
+    function updateDashboardStats() {
+      const totalClothes = clothes.length;
+      const totalPrice = Math.round(clothes.reduce((acc, c) => acc + (Number(c.price) || 0), 0) / 10000);
+      const totalWears = clothes.reduce((acc, c) => acc + (Number(c.wearCount) || 0), 0);
+
+      document.getElementById('dashClothCount').innerText = totalClothes;
+      document.getElementById('dashClothSub').innerText = `가치 ${totalPrice}만원 · 누적 ${totalWears}회`;
+
+      const now = new Date('2026-11-08');
+      const unworn = clothes.filter(c => (now - new Date(c.lastDate)) / (1000 * 60 * 60 * 24) >= 365);
+      document.getElementById('dockBadgeCloset').innerText = unworn.length;
+
+      // 다이어트 목표 달성률
+      const latestW = bodyLogs.length ? bodyLogs[bodyLogs.length - 1].weight : bodyGoal.startW;
+      const totalToLose = bodyGoal.startW - bodyGoal.goalW;
+      const lost = bodyGoal.startW - latestW;
+      const pct = totalToLose > 0 ? Math.min(100, Math.max(0, Math.round((lost / totalToLose) * 100))) : 50;
+      document.getElementById('dashGoalPercent').innerText = pct;
+      document.getElementById('dashGoalBar').style.width = `${pct}%`;
+
+      // 화장품 파우치 현황
+      let safe = 0, soon = 0, expired = 0;
+      cosmetics.forEach(c => {
+        const diff = Math.ceil((new Date(c.expireDate) - now) / (1000 * 60 * 60 * 24));
+        if (diff < 0) expired++;
+        else if (diff <= 30) soon++;
+        else safe++;
+      });
+
+      document.getElementById('dashCosmCount').innerText = cosmetics.length;
+      document.getElementById('dashCosmAlertBadge').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[9px]"></i> 만료 ${expired}개`;
+      document.getElementById('dashCosmSub').innerHTML = `안전 ${safe} · <span class="text-amber-500 font-bold">임박 ${soon}</span> · <span class="text-primary-color font-bold">만료 ${expired}</span>`;
+      document.getElementById('bannerAlertTitle').innerText = `유통기한 지난 화장품 ${expired}개 발견`;
+      document.getElementById('dockBadgePouch').innerText = expired + soon;
+    }
+
+    // ---------- 5. 3일 날씨 가이드 ----------
+    function selectCity(city) {
+      currentCity = city;
+      document.querySelectorAll('.city-btn').forEach(btn => {
+        if (btn.dataset.city === city) {
+          btn.className = 'city-btn px-2.5 py-1 rounded-full badge-soft font-extrabold';
+        } else {
+          btn.className = 'city-btn px-2.5 py-1 rounded-full text-[var(--text-muted)]';
+        }
+      });
+
+      const data = cityWeathers[city];
+      const grid = document.getElementById('weatherCardsGrid');
+      grid.innerHTML = '';
+
+      data.days.forEach((d, idx) => {
+        const box = document.createElement('div');
+        box.className = `${idx === 0 ? 'weather-active' : 'card-box'} rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center text-center space-y-1.5 shadow-sm`;
+        box.innerHTML = `
+          <div class="text-[11px] font-black">${d.label} <span class="text-primary-color font-semibold">${d.date}</span></div>
+          <div class="text-xl py-0.5"><i class="fa-solid ${d.icon}"></i></div>
+          <div class="text-lg sm:text-2xl font-black">${d.temp}°C</div>
+          <div class="text-[10px] text-[var(--text-muted)]">${d.min}° / ${d.max}°</div>
+          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold shadow-sm ${d.badgeClass}">${d.badge}</span>
+        `;
+        grid.appendChild(box);
+      });
+
+      document.getElementById('briefSubTemp').innerText = data.feel;
+      document.getElementById('briefDesc').innerText = data.desc;
+      document.getElementById('briefItems').innerText = data.items;
+    }
+
+    // ---------- 6. 의류 이미지 리사이징 & 저장 ----------
+    function resizeImage(file, maxWidth, callback) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          callback(canvas.toDataURL('image/jpeg', 0.7)); // 가벼운 Base64로 압축
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveCloth() {
+      const name = document.getElementById('clothNameInput').value.trim();
+      if (!name) return alert('의류명을 입력해 주세요.');
+      const price = Number(document.getElementById('clothPriceInput').value) || 50000;
+      const wearCount = Number(document.getElementById('clothWearInput').value) || 1;
+      const category = document.getElementById('clothCatInput').value;
+      const lastDate = document.getElementById('clothLastDateInput').value;
+      const fileInput = document.getElementById('clothImgInput');
+
+      const finalize = (imgUrl) => {
+        clothes.unshift({ id: Date.now(), name, category, price, wearCount, lastDate, img: imgUrl });
+        closeModal('clothModal');
+        renderAll();
+      };
+
+      if (fileInput.files && fileInput.files[0]) {
+        resizeImage(fileInput.files[0], 500, finalize);
+      } else {
+        finalize('https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&q=80');
+      }
+    }
+
+    function renderCloset() {
+      const bar = document.getElementById('closetCategoryBar');
+      bar.innerHTML = '';
+      ['전체', ...categories].forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${currentCat === cat ? 'btn-primary' : 'card-box text-[var(--text-muted)]'}`;
+        btn.innerText = cat;
+        btn.onclick = () => { currentCat = cat; renderCloset(); };
+        bar.appendChild(btn);
+      });
+
+      const grid = document.getElementById('closetGrid');
+      grid.innerHTML = '';
+      const filtered = currentCat === '전체' ? clothes : clothes.filter(c => c.category === currentCat);
+
+      filtered.forEach(item => {
+        const cpw = Math.round(item.price / Math.max(1, item.wearCount)).toLocaleString();
+        const card = document.createElement('div');
+        card.className = 'card-box rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between';
+        card.innerHTML = `
+          <div>
+            <div class="h-36 relative bg-gray-100">
+              <img src="${item.img}" class="w-full h-full object-cover">
+              <span class="absolute top-2 left-2 badge-soft px-2 py-0.5 rounded-full text-[9px] font-black">${item.category}</span>
+              <button onclick="deleteCloth(${item.id})" class="absolute top-2 right-2 bg-black/40 text-white w-6 h-6 rounded-full text-[10px] flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div class="p-3 space-y-1">
+              <h4 class="font-bold text-xs truncate">${item.name}</h4>
+              <p class="text-[10px] text-[var(--text-muted)]">1회당 ${cpw}원 (${(item.price/10000).toFixed(1)}만)</p>
+            </div>
+          </div>
+          <div class="px-3 pb-3 flex items-center justify-between">
+            <span class="text-[11px] font-extrabold text-primary-color">${item.wearCount}회</span>
+            <button onclick="wearPlus(${item.id})" class="badge-soft px-2 py-0.5 rounded-md text-[10px] font-bold">+1 입음</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      const sel = document.getElementById('clothCatInput');
+      sel.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    function wearPlus(id) {
+      const target = clothes.find(c => c.id === id);
+      if (target) {
+        target.wearCount++;
+        target.lastDate = '2026-11-08';
+        renderAll();
+      }
+    }
+
+    function deleteCloth(id) {
+      if (confirm('이 의류를 삭제하시겠습니까?')) {
+        clothes = clothes.filter(c => c.id !== id);
+        renderAll();
+      }
+    }
+
+    // ---------- 7. OOTD 기록 ----------
+    function renderOOTD() {
+      const sel = document.getElementById('ootdClothSelect');
+      sel.innerHTML = clothes.map(c => `<option value="${c.id}">[${c.category}] ${c.name}</option>`).join('');
+
+      const box = document.getElementById('ootdLogContainer');
+      box.innerHTML = ootdLogs.length ? '' : '<p class="py-4 text-center text-[var(--text-muted)]">오늘의 착샷을 남겨보세요!</p>';
+      ootdLogs.forEach(l => {
+        box.innerHTML += `
+          <div class="py-2.5 flex justify-between items-center">
+            <div>
+              <span class="font-bold">${l.clothName}</span>
+              <span class="text-[var(--text-muted)] ml-1.5">${l.memo}</span>
+            </div>
+            <span class="badge-soft px-2 py-0.5 rounded-full text-[9px] font-bold">${l.date}</span>
+          </div>
+        `;
+      });
+    }
+
+    function recordOOTD() {
+      const id = Number(document.getElementById('ootdClothSelect').value);
+      const date = document.getElementById('ootdDateInput').value;
+      const memo = document.getElementById('ootdMemoInput').value || '데일리룩';
+      const item = clothes.find(c => c.id === id);
+      if (!item) return;
+
+      item.wearCount++;
+      item.lastDate = date;
+      ootdLogs.unshift({ date, clothName: item.name, memo });
+      renderAll();
+      alert(`'${item.name}' 착용이 기록되었습니다!`);
+    }
+
+    // ---------- 8. AI 코디 ----------
+    function renderAICoords() {
+      const container = document.getElementById('aiCoordCards');
+      container.innerHTML = `
+        <div class="alert-box rounded-2xl p-4 space-y-1.5">
+          <span class="badge-soft px-2 py-0.5 rounded-full text-[9px] font-bold">오피스 / 출근룩</span>
+          <h4 class="font-extrabold text-xs sm:text-sm">단정한 가을 슬랙스 스타일링</h4>
+          <p class="text-[11px] text-[var(--text-muted)]">오버핏 캐시미어 니트 + 와이드 핀턱 슬랙스 + 울 자켓</p>
+        </div>
+        <div class="alert-box rounded-2xl p-4 space-y-1.5">
+          <span class="badge-soft px-2 py-0.5 rounded-full text-[9px] font-bold">주말 / 데일리</span>
+          <h4 class="font-extrabold text-xs sm:text-sm">화사한 브런치 & 모임 룩</h4>
+          <p class="text-[11px] text-[var(--text-muted)]">실크 리본 블라우스 + 와이드 핀턱 슬랙스</p>
+        </div>
+      `;
+    }
+
+    // ---------- 9. 바디 로그 & 그래프 ----------
+    function saveBodyGoals() {
+      bodyGoal.startW = parseFloat(document.getElementById('startWeightInput').value) || 58;
+      bodyGoal.goalW = parseFloat(document.getElementById('goalWeightInput').value) || 52;
+      bodyGoal.goalWaist = parseFloat(document.getElementById('goalWaistInput').value) || 25;
+      renderAll();
+      renderBodyChart();
+    }
+
+    function addBodyLog() {
+      const d = document.getElementById('bodyDateInput').value.slice(5).replace('-', '.');
+      const w = parseFloat(document.getElementById('bodyWeightInput').value);
+      const waist = parseFloat(document.getElementById('bodyWaistInput').value) || 26.0;
+      if (isNaN(w)) return alert('체중을 입력해 주세요.');
+      bodyLogs.push({ date: d, weight: w, waist });
+      renderAll();
+      renderBodyChart();
+    }
+
+    function renderBodyChart() {
+      const ctx = document.getElementById('bodyChart').getContext('2d');
+      if (chartObj) chartObj.destroy();
+      chartObj = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: bodyLogs.map(b => b.date),
+          datasets: [
+            { label: '체중(kg)', data: bodyLogs.map(b => b.weight), borderColor: '#e1004b', backgroundColor: 'rgba(225,0,75,0.08)', fill: true, tension: 0.35 },
+            { label: '허리(inch)', data: bodyLogs.map(b => b.waist), borderColor: '#f59e0b', borderDash: [4, 4], tension: 0.35 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    // ---------- 10. 화장품 파우치 ----------
+    function renderPouch() {
+      const box = document.getElementById('pouchList');
+      box.innerHTML = '';
+      const now = new Date('2026-11-08');
+
+      cosmetics.forEach(c => {
+        const diff = Math.ceil((new Date(c.expireDate) - now) / (1000 * 60 * 60 * 24));
+        let badge = `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[9px] font-bold">안전 D-${diff}</span>`;
+        if (diff < 0) badge = `<span class="btn-primary px-2 py-0.5 rounded-full text-[9px] font-bold">만료 (+${Math.abs(diff)}일)</span>`;
+        else if (diff <= 30) badge = `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[9px] font-bold">임박 D-${diff}</span>`;
+
+        box.innerHTML += `
+          <div class="card-box rounded-2xl p-3 flex items-center justify-between text-xs">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold">${c.name}</span>
+                ${badge}
+              </div>
+              <p class="text-[10px] text-[var(--text-muted)] mt-0.5">개봉일: ${c.openDate} · PAO ${c.pao}개월 · 만료: ${c.expireDate}</p>
+            </div>
+            <button onclick="deleteCosmetic(${c.id})" class="text-[var(--text-muted)] hover:text-red-500 p-1.5"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+      });
+    }
+
+    function addCosmetic() {
+      const name = document.getElementById('cosmNameInput').value.trim();
+      const openDate = document.getElementById('cosmOpenInput').value;
+      const pao = Number(document.getElementById('cosmPaoInput').value);
+      if (!name) return alert('화장품 이름을 입력해 주세요.');
+
+      const d = new Date(openDate);
+      d.setMonth(d.getMonth() + pao);
+      const expireDate = d.toISOString().split('T')[0];
+
+      cosmetics.unshift({ id: Date.now(), name, openDate, pao, expireDate });
+      document.getElementById('cosmNameInput').value = '';
+      renderAll();
+    }
+
+    function deleteCosmetic(id) {
+      cosmetics = cosmetics.filter(c => c.id !== id);
+      renderAll();
+    }
+
+    // ---------- 11. 데이터 백업 / 복원 기능 (PWA 데이터 보존) ----------
+    function exportData() {
+      const backupObj = { clothes, cosmetics, bodyLogs, categories, ootdLogs, bodyGoal, exportDate: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `smart-closet-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = JSON.parse(evt.target.result);
+          if (data.clothes) clothes = data.clothes;
+          if (data.cosmetics) cosmetics = data.cosmetics;
+          if (data.bodyLogs) bodyLogs = data.bodyLogs;
+          if (data.categories) categories = data.categories;
+          if (data.ootdLogs) ootdLogs = data.ootdLogs;
+          if (data.bodyGoal) bodyGoal = data.bodyGoal;
+          renderAll();
+          closeModal('backupModal');
+          alert('데이터가 성공적으로 복원되었습니다!');
+        } catch (err) {
+          alert('올바른 백업 JSON 파일이 아닙니다.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // ---------- 12. 모달 제어 ----------
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      if (id === 'purgeModal') {
+        const now = new Date('2026-11-08');
+        const unworn = clothes.filter(c => (now - new Date(c.lastDate)) / (1000 * 60 * 60 * 24) >= 365);
+        document.getElementById('purgeListBox').innerHTML = unworn.map(u => `
+          <div class="py-2.5 flex justify-between items-center">
+            <div>
+              <p class="font-bold">${u.name}</p>
+              <p class="text-[10px] text-[var(--text-muted)]">마지막 착용: ${u.lastDate}</p>
+            </div>
+            <button onclick="deleteCloth(${u.id}); openModal('purgeModal')" class="text-primary-color font-bold text-[11px]">정리</button>
+          </div>
+        `).join('') || '<p class="py-4 text-center">1년 이상 미착용 의류가 없습니다.</p>';
+      }
+      if (id === 'categoryModal') {
+        document.getElementById('catModalList').innerHTML = categories.map(c => `
+          <span class="badge-soft px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+            ${c} <i onclick="removeCategory('${c}')" class="fa-solid fa-xmark cursor-pointer"></i>
+          </span>
+        `).join('');
+      }
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function addCategory() {
+      const v = document.getElementById('newCatInput').value.trim();
+      if (v && !categories.includes(v)) {
+        categories.push(v);
+        document.getElementById('newCatInput').value = '';
+        openModal('categoryModal');
+        renderCloset();
+        saveToStorage();
+      }
+    }
+
+    function removeCategory(c) {
+      categories = categories.filter(item => item !== c);
+      openModal('categoryModal');
+      renderCloset();
+      saveToStorage();
+    }
+  </script>
+</body>
+</html>
