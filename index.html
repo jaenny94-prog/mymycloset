@@ -1069,5 +1069,14 @@
       saveToStorage();
     }
   </script>
+ <script>
+  // 서비스 워커 등록 (PWA 툴바 제거 필수 요건)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('PWA ServiceWorker Ready'))
+      .catch(err => console.log('SW Error:', err));
+  }
+</script>
+</body>
 </body>
 </html>
